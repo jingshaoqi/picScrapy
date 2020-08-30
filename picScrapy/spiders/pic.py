@@ -16,45 +16,29 @@ class PicSpider(Spider):
     }
 
     def start_requests(self):
+        main_url = 'http://www.jj20.com/bz/'
+        yield Request(main_url, callback=self.parse)
 
-        domain = 'http://www.jj20.com/bz/'
-
-        # 定义各个分类的入口
-        start_urls = [
-            'zrfg/list_1',
-            'dwxz/list_2',
-            'hhzw/list_3',
-            'jzfg/list_4',
-            'qcjt/list_5',
-            'ysbz/list_6',
-            'nxxz/list_7',
-            'rwtx/list_8',
-            'jwxz/list_9',
-            'mwjy/list_10',
-            'czxt/list_11',
-            'sjsh/list_12',
-            'ysyx/list_13',
-            'tyyd/list_14',
-            'ppgg/list_15',
-            'ktmh/list_16',
-            'shsj/list_17',
-            'slkt/list_18',
-            'xmsc/list_19',
-            'jqqd/list_20',
-            'jxbz/list_120',
-
-        ]
-
-        for i in start_urls:
-            url = domain + i + '_1.html'
-            yield Request(url, headers=self.headers)
+    def parse(self, response):
+        urls = response.xpath('//body/div/div[@class="g-class-top"]/a/@href').extract()
+        '''this urls is 
+        "/bz/zrfg/" 
+        "/bz/dwxz/"
+        "/bz/hhzw"
+        ...
+        '''
+        if urls is not None:
+            for u in urls:
+                full_url = urljoin(response.url, u)
+                yield Request(url = full_url, callback=self.parse_by_category)
 
     # 一级页面的处理函数
-    def parse(self, response):
+    def parse_by_category(self, response):
         # 提取界面所有的符合入口条件的url
         all_urls = response.xpath('//div/ul[@class="picbz"]/li/a[1]/@href').extract()
         category_name = response.xpath('//div/div/em/h1/text()').get()
 
+        # all_urls 有4X6=24张图片
         if len(all_urls):
             # 遍历获得的url，继续爬取
             for url in all_urls:
