@@ -52,8 +52,8 @@ class PicSpider(Spider):
     # 一级页面的处理函数
     def parse(self, response):
         # 提取界面所有的符合入口条件的url
-        all_urls = response.xpath('//div[@class="main"]/ul/li/a[1]/@href').extract()
-        category_name = response.xpath('//li[@class="navnm1"]/a/text()').extract()[0]
+        all_urls = response.xpath('//div/ul[@class="picbz"]/li/a[1]/@href').extract()
+        category_name = response.xpath('//div/div/em/h1/text()').get()
 
         if len(all_urls):
             # 遍历获得的url，继续爬取
@@ -62,16 +62,17 @@ class PicSpider(Spider):
                 url = urljoin(response.url, url)
                 yield Request(url, callback=self.parse_img, meta={'cat': category_name})
 
-            next_url = re.search(r'list_\d+_(\d+)', response.url)
-            next_page = str(int(next_url.group(1)) + 1) + '.html'
-            # 下一页的url
-            next_url = re.sub(r'(\d+).html', next_page, response.url)
-            yield Request(next_url, callback=self.parse, meta={'cat': category_name})
+        # 能否在本页找到下一页按钮
+        next_node = response.xpath('//div[@class="tspage"]/div[@class="tsp_nav"]/a[contains(string(),"下一页")]')
+        if next_node is not None:
+            next_href = next_node.xpath('.//@href').get()
+            next_url = urljoin(response.url, next_href)
+            yield Request(url= next_url,callback=self.parse, meta={'cat': category_name})
 
     # 二级页面的处理函数
     def parse_img(self, response):
         item = PicscrapyItem()
-        # 提取页面符合条件的图片地址
+        # 提取页面符合条件的图片地址进行下载
         item['image_urls'] = response.xpath('//img[@id="bigImg"]/@src').extract()
         title = response.xpath('/html/body/div[3]/h1/span/text()').extract()[0]
         item['title'] = title.split('(')[0] + '(' + re.search(r'(\d+)/(\d+)', title).group(2) + ')'

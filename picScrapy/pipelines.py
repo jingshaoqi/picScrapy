@@ -24,4 +24,6 @@ class PicscrapyPipeline(ImagesPipeline):
             url = request.url
         url = urlparse(url)
         img_name = url.path.split('/')[5].split('.')[0]
-        return request.meta['cat'] + '/' + request.meta['title'] + '/%s.jpg' % img_name
+        fu = request.meta['cat'] + '/' + request.meta['title'] + '/%s.jpg' % img_name
+        return fu
+
