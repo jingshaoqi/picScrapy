@@ -16,7 +16,7 @@ NEWSPIDER_MODULE = 'picScrapy.spiders'
 # 爬取深度
 # DEPTH_LIMIT = 10
 # 图片存放位置
-IMAGES_STORE = '/home/jwang/Music'
+IMAGES_STORE = './image_folder'
 # 图片最小宽度
 IMAGES_MIN_WIDTH = 500
 # 图片最小高度
